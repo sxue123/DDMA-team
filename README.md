@@ -6,3 +6,4 @@
 - **UI 待办与前端架构**：[UIBacklog.md](UIBacklog.md)
 - **产品待办**：[ProductBacklog.md](ProductBacklog.md)
 - **冲刺计划**：[SprintReleasePlan.md](SprintReleasePlan.md)
+- **后端与数据层技术选型讨论**：[BackendTechStackDiscussion.md](BackendTechStackDiscussion.md)
