@@ -452,102 +452,113 @@ erDiagram
   Order ||--o{ OrderPromoApplication : applies
 ```
 ```mermaid
-flowchart TB
-  %% ===== Clients =====
-  CLIENT[Web / Mobile Client]
+erDiagram
+    USERS {
+        bigint id PK
+        string email
+        string password_hash
+        string full_name
+        string phone
+        string role
+        string account_status
+        datetime created_at
+        datetime updated_at
+    }
 
-  %% ===== API Layer =====
-  subgraph API[MVP API Layer]
-    AUTH_API[Auth API]
-    PLAN_API[Planning API]
-    ORDER_API[Order API]
-    TRACK_API[Tracking API]
-    WEBHOOK_API[Stripe Webhook API]
-  end
+    OTP_CHALLENGES {
+        bigint id PK
+        bigint user_id FK
+        string otp_code
+        string purpose
+        datetime expires_at
+        boolean used
+        datetime created_at
+    }
 
-  %% ===== Core Services =====
-  subgraph CORE[MVP Core Services]
-    IDENTITY[Identity Service]
-    ELIGIBILITY[Eligibility & Pricing Service]
-    ORDERING[Order Management Service]
-    TRACKING[Tracking Service]
-    PAYMENT[Payment Orchestration Service]
-  end
+    DELIVERY_CENTERS {
+        bigint id PK
+        string code
+        string name
+        string address
+        decimal latitude
+        decimal longitude
+        boolean active
+        datetime created_at
+    }
 
-  %% ===== Domain Data =====
-  subgraph DATA[MVP Data Storage]
-    USERS[(Users)]
-    OTP[(OTP Challenges)]
-    CENTERS[(Delivery Centers)]
-    FLEET[(Fleet Inventory)]
-    ORDERS[(Orders)]
-    PARCELS[(Order Parcels)]
-    PAYMENTS[(Payments)]
-  end
+    FLEET_VEHICLES {
+        bigint id PK
+        bigint delivery_center_id FK
+        string vehicle_type
+        string vehicle_code
+        decimal max_weight_kg
+        decimal max_length_cm
+        decimal max_width_cm
+        decimal max_height_cm
+        string availability_status
+        datetime created_at
+    }
 
-  %% ===== External Dependencies =====
-  subgraph EXT[External Services]
-    MAP[Map / Geocoding API]
-    STRIPE[Stripe API]
-  end
+    ORDERS {
+        bigint id PK
+        bigint user_id FK
+        bigint delivery_center_id FK
+        bigint fleet_vehicle_id FK
+        string order_number
+        string order_status
+        string payment_status
+        string pickup_address
+        string dropoff_address
+        decimal pickup_lat
+        decimal pickup_lng
+        decimal dropoff_lat
+        decimal dropoff_lng
+        decimal quoted_price
+        decimal final_price
+        integer estimated_eta_minutes
+        string recommended_vehicle_type
+        string handoff_pin
+        string tracking_status
+        decimal current_lat
+        decimal current_lng
+        datetime placed_at
+        datetime paid_at
+        datetime delivered_at
+        datetime created_at
+        datetime updated_at
+    }
 
-  %% ===== Platform / Security =====
-  subgraph PLATFORM[Security & Runtime]
-    JWT[JWT Auth / Security Filter]
-    CONFIG[App Config]
-    SEED[Dev Seed Data]
-  end
+    ORDER_PARCELS {
+        bigint id PK
+        bigint order_id FK
+        decimal weight_kg
+        decimal length_cm
+        decimal width_cm
+        decimal height_cm
+        string size_category
+        datetime created_at
+    }
 
-  %% ===== Client Entry =====
-  CLIENT --> AUTH_API
-  CLIENT --> PLAN_API
-  CLIENT --> ORDER_API
-  CLIENT --> TRACK_API
+    PAYMENTS {
+        bigint id PK
+        bigint order_id FK
+        string provider
+        string payment_intent_id
+        decimal amount
+        string currency
+        string payment_status
+        datetime webhook_received_at
+        datetime paid_at
+        datetime created_at
+    }
 
-  %% ===== API to Services =====
-  AUTH_API --> IDENTITY
-  PLAN_API --> ELIGIBILITY
-  ORDER_API --> ORDERING
-  ORDER_API --> PAYMENT
-  TRACK_API --> TRACKING
-  WEBHOOK_API --> PAYMENT
-
-  %% ===== Security =====
-  CLIENT --> JWT
-  JWT --> AUTH_API
-  JWT --> PLAN_API
-  JWT --> ORDER_API
-  JWT --> TRACK_API
-
-  %% ===== Service Collaboration =====
-  ORDERING --> ELIGIBILITY
-  ORDERING --> PAYMENT
-  TRACKING --> ORDERING
-  PAYMENT --> ORDERING
-
-  %% ===== Persistence =====
-  IDENTITY --> USERS
-  IDENTITY --> OTP
-
-  ELIGIBILITY --> CENTERS
-  ELIGIBILITY --> FLEET
-
-  ORDERING --> ORDERS
-  ORDERING --> PARCELS
-
-  PAYMENT --> PAYMENTS
-  PAYMENT --> ORDERS
-
-  TRACKING --> ORDERS
-
-  %% ===== External Integrations =====
-  ELIGIBILITY --> MAP
-  PAYMENT --> STRIPE
-
-  %% ===== Config / Seed =====
-  CONFIG --> JWT
-  SEED --> CENTERS
-  SEED --> FLEET
+    USERS ||--o{ OTP_CHALLENGES : requests
+    USERS ||--o{ ORDERS : places
+    DELIVERY_CENTERS ||--o{ FLEET_VEHICLES : owns
+    DELIVERY_CENTERS ||--o{ ORDERS : serves
+    FLEET_VEHICLES ||--o{ ORDERS : assigned_to
+    ORDERS ||--o{ ORDER_PARCELS : contains
+    ORDERS ||--o{ PAYMENTS : has
 ```
 
 ### 4.1 实体字段概要（实现对照）
