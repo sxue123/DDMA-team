@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:15.2-alpine
+    environment:
+      POSTGRES_DB: ddma
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ddma-pg-local:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  ddma-pg-local:

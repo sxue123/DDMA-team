@@ -13,119 +13,33 @@
 
 ## PostgreSQL Installation (for Development)
 
-### 1. Create a New Project in IntelliJ
+### 1. Clone the Repository and Open in IntelliJ
 
-Select **Spring Boot** in the Generators section and fill in:
+**Clone via terminal:**
 
-| Field | Value |
-|---|---|
-| Project Name | `ddma` |
-| Language | Java |
-| Type | Gradle - Groovy |
-| Group | `com.laioffer` |
-| Package | `com.laioffer.ddma` |
-| JDK | Eclipse Temurin 21 / Java 21 |
-
-### 2. Rename `src/main/resources/application.properties` to `src/main/resources/application.yml`
-
-Replace the contents with:
-
-```yaml
-spring:
-  jackson:
-    default-property-inclusion: non_null
-    property-naming-strategy: SNAKE_CASE
-  datasource:
-    url: jdbc:postgresql://${DATABASE_URL:localhost}:${DATABASE_PORT:5432}/ddma
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:secret}
-    driver-class-name: org.postgresql.Driver
-  sql:
-    init:
-      mode: ${INIT_DB:always}
-      schema-locations: "classpath:database-init.sql"
-
-logging:
-  level:
-    org.apache.coyote.http11.Http11InputBuffer: TRACE  # Incoming HTTP requests
-    org.springframework.jdbc.datasource.init: DEBUG
+```bash
+git clone https://github.com/qhuang258/DDMA-team.git
 ```
 
-### 3. Create `src/main/resources/database-init.sql`
+**Open as a Gradle project in IntelliJ:**
 
-Place the file under `src/main/resources/`. The full schema and seed data are in [`docs/project_backlog/database-init.sql`](docs/project_backlog/database-init.sql).
+1. Launch IntelliJ IDEA.
+2. On the Welcome screen, click **Open**.
+3. Navigate into the cloned folder, go to `backend/DeliveryManagement/`, and **select `build.gradle`** (not the folder).
+4. Click **Open**, then choose **Open as Project** when prompted.
+5. IntelliJ will import the Gradle project and download dependencies automatically. Wait for the bottom status bar to finish syncing.
 
-Tables created (in dependency order):
+> **Note:** Always open via `build.gradle`, not the root folder. Opening the folder directly may cause IntelliJ to treat it as a plain directory and skip Gradle recognition.
 
-1. `app_user`
-2. `otp_challenge`
-3. `delivery_center`
-4. `fleet_vehicle`
-5. `orders`
-6. `order_parcel`
-7. `payment`
+### 2. Start the Database
 
-### 4. Update `build.gradle`
-
-```groovy
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '4.0.4'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
-
-group = 'com.laioffer'
-version = '0.0.1-SNAPSHOT'
-description = 'ddma'
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    runtimeOnly 'org.postgresql:postgresql:42.7.7'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
-```
-
-### 5. Create `docker-compose.yml`
-
-```yaml
-services:
-  db:
-    image: postgres:15.2-alpine
-    environment:
-      POSTGRES_DB: ddma
-      POSTGRES_PASSWORD: secret
-    volumes:
-      - ddma-pg-local:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-volumes:
-  ddma-pg-local:
-```
-
-Start the database:
+Navigate to the directory containing `docker-compose.yml` (the project root) and run:
 
 ```bash
 docker-compose up -d
 ```
 
-### 6. Test the Database Connection in IntelliJ
+### 3. Test the Database Connection in IntelliJ
 
 **Connect via the Database panel**
 
@@ -143,6 +57,8 @@ docker-compose up -d
 
 4. Click **Test Connection** — IntelliJ may prompt you to download the PostgreSQL driver; click **Download**.
 5. Click **OK** to save.
+
+After completing all 3 steps, you can run the project in IntelliJ by clicking the green **Run** button (or `Shift+F10`) on the main application class.
 
 **Verify tables and seed data**
 
