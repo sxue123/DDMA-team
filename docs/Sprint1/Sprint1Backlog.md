@@ -38,7 +38,8 @@
 | `T-1.16` | 前端接口粒度：补齐后端 API client（register/login/OTP、JWT 存储与使用策略、统一错误映射；先不做高保真 UI）                                                                                              | 前端 Lead × 1~2 | 3          | `T-1.14` | ⬜   | @Yuyang Zhou, @Yiyuan Miao  |
 | `T-1.17` | 前端接口联调：把 `LoginPage`/`RegisterPage` 从占位逻辑替换为真实接口调用，并让 `AuthContext`/`ProtectedRoute` 使用后端 JWT（成功/失败均有可理解的 UI 反馈）                                             | 前端 Lead × 1~2 | 3          | `T-1.16` | ⬜   | @Yuyang Zhou, @Jiayi Gao    |
 | `T-1.18` | QA：完成注册/登录端到端 smoke（快乐路径 + 关键失败：重复账户、错误凭证、OTP 错误/过期），并输出可复现的测试证据                                                                                         | QA/测试 × 1~2   | 2          | `T-1.17` | ⬜   | @Yuyang Zhou, @Jiayi Gao    |
-|          |                                                                                                                                                                                                         | **冲刺总计**    | **28小时** | —        | —    | —                           |
+| `T-1.19` | 后端独立 feature：新增“当前登录用户信息接口”（`/auth/me` 或等价受保护端点），登录后可返回当前用户基础资料、认证状态与关键鉴权字段，作为 JWT 生效后的独立验证入口 | 后端开发 × 1    | 3          | `T-1.14` | ⬜   | @Sida Xue                   |
+|          |                                                                                                                                                                                                         | **冲刺总计**    | **31小时** | —        | —    | —                           |
 
 ---
 
@@ -65,6 +66,7 @@
 | `T-1.17b` | `T-1.17`   | 把 `LoginPage`、`AuthContext`、`ProtectedRoute` 接到 JWT 流程                                                  | @Yuyang Zhou  | @Jiayi Gao    | 登录后能进受保护页面，退出后回登录页                |
 | `T-1.18a` | `T-1.18`   | 编写 smoke checklist：happy path + 重复账户 + 错密码 + 错/过期 OTP                                             | @Jiayi Gao    | @Hao Chen     | 一份可复测的 checklist / 测试说明                   |
 | `T-1.18b` | `T-1.18`   | 收集证据：截图、Postman 请求/响应、必要日志                                                                    | @Jiayi Gao    | @Yuyang Zhou  | PR / 测试报告里可直接贴证据                         |
+| `T-1.19a` | `T-1.19`   | 新增 `/auth/me`（或等价 `current-user` 端点）：补齐响应 DTO、从 Security Context / JWT 解析当前用户、必要时回查用户表，并与 OpenAPI 契约对齐 | @Sida Xue     | @Lei Feng     | 登录后带合法 JWT 可返回当前用户信息；未登录或 token 无效时返回一致的鉴权错误 |
 
 ## 3.2 任务分配
 
@@ -74,9 +76,10 @@
 - `@Yanjia Kan`：`T-1.13a`、`T-1.15b`，配合 `T-1.11a` / `T-1.13b`。重点是 OTP 和车辆接口，两块都能并行推进。
 - `@Lei Feng`： `T-1.14b`，配合 `T-1.11b` / `T-1.12b`。重点放在 Spring Security / JWT 鉴权，不建议这周再背太多业务接口。
 - `@Hangyi Gan`： `T-1.11b`、`T-1.15a`。把中心/车辆数据层和中心接口打通，减少后面前端联调卡点。
-- `@Yuyang Zhou`：主抓 `T-1.16b`、`T-1.17b`，配合 `T-1.12a` / `T-1.16a` / `T-1.18b`。你负责前端认证主链和联调节奏。
+- `@Yuyang Zhou`：主抓 `T-1.16b`、`T-1.17b`，配合 `T-1.12a` / `T-1.16a`。你负责前端认证主链和联调节奏。
 - `@Yiyuan Miao`：主抓 `T-1.16a`。把 API client 封装好，给页面联调创造稳定入口。
 - `@Jiayi Gao`：主抓 `T-1.17a`、`T-1.18a`、`T-1.18b`。先接注册页，再顺手沉淀 smoke 测试说明和证据模板。
+- `@Sida Xue`：主抓 `T-1.19a`。负责新增当前登录用户信息接口，把 JWT 生效后的用户身份读取单独收拢成一个可验证、可验收的后端 feature。
 - `@Hao Chen`：负责 Sprint 1 的跟进与卡点清理，不建议背核心实现；更适合盯 PR 顺序、文档入口、验收 checklist。
 
 ### B. 建议分配原则
@@ -84,6 +87,7 @@
 - 后端不要让 3 个人同时碰认证主链。认证主链建议固定 `Qiyuan + Yanjia + Lei`，其中 `Qiyuan` 负责契约和主流程，`Yanjia` 负责 OTP / 业务分支，`Lei` 负责安全拦截和鉴权。
 - 数据接口单独成线。`Hangyi + Yanjia` 处理 center / vehicle，避免所有后端任务都堆到认证接口上。
 - 前端先“底层封装”再“页面联调”。`Yiyuan` 先把 API client 和错误对象立起来，`Yuyang + Jiayi` 再把页面接上，这样返工最少。
+- `Sida` 单独成线做当前登录用户信息接口，避免和注册/登录主流程抢同一组 endpoint，同时给 Sprint 1 留一个清晰的 JWT 验证入口。
 - QA 不要等到最后一天才开始。`Jiayi` 可以在后端接口一出来就先写 checklist，联调当天只补证据。
 
 ### C. 建议顺序
@@ -92,7 +96,8 @@
 2. 同时并行下发 `T-1.16a` 的前端底层封装，让前端先用 mock / stub 形式把 client 层搭起来。
 3. `T-1.13*` 和 `T-1.15*` 在 OpenAPI baseline 定下来后立刻并行开做，不要串行等。
 4. `T-1.14*` 完成后马上接 `T-1.16b`、`T-1.17*`，把 JWT 流程打通。
-5. `T-1.18*` 从中段开始写 checklist，最后 1 天集中跑 smoke 和收证据。
+5. `T-1.14*` 稳定后启动 `T-1.19`，把当前登录用户信息接口单独立起来，给 Sprint 1 演示和验收一个固定的 JWT 验证入口。
+6. `T-1.18*` 从中段开始写 checklist，最后 1 天集中跑 smoke 和收证据。
 
 ## 4. 执行顺序与依赖
 
@@ -106,6 +111,7 @@ flowchart LR
   t116[T_1_16_fe_api_client_jwt_准备]
   t117[T_1_17_fe_wire_pages_auth]
   t118[T_1_18_qa_smoke_smoke]
+  t119[T_1_19_be_auth_current_user_endpoint]
 
   t111 --> t112
   t112 --> t113
@@ -115,6 +121,7 @@ flowchart LR
   t115 --> t116
   t116 --> t117
   t117 --> t118
+  t114 --> t119
 ```
 
 ---
@@ -136,6 +143,7 @@ flowchart LR
   - **`feature/fe-api-client-auth`**：对应 `T-1.16`（统一 API client、JWT 存储/注入、错误映射）
   - **`feature/fe-wire-login-register-pages`**：对应 `T-1.17`（Login/Register 真联调、AuthContext/ProtectedRoute 接 JWT）
   - **`chore/qa-smoke-guide-and-evidence`**：对应 `T-1.18`（smoke 步骤说明、证据模板、Postman 请求/响应片段等）
+  - **`feature/be-auth-current-user-endpoint`**：对应 `T-1.19`（独立当前登录用户信息接口，返回 current user 基础资料与认证字段）
 
 - **合并流**
   - **日常**：`feature/*` / `chore/*` → PR → **`develop`**
@@ -241,6 +249,18 @@ flowchart LR
   - Failure paths：重复账户、错误凭证、OTP 错误/过期。
 - 给出可复现证据：后端请求/响应关键片段或前端操作截图/日志，确保他人可以复测。
 
+### `T-1.19`
+
+> T-1.19 在功能上的意思是
+> 用 Postman 或前端带着合法 JWT 调这个接口时，后端能直接返回“我现在是谁”这类当前会话信息，比如 user id、name、email/phone、guest 标记或你们约定的最小身份字段。
+> 不带 token、带错 token 或 token 过期时，这个接口会稳定返回 401/403，而不是混进业务接口里才顺带发现鉴权有问题。
+> 这样做的价值是把 Sprint 1 的“JWT 已经生效”单独收拢成一个很清晰的后端验证入口，后续前端联调、Postman 验收、QA smoke 都可以直接复用这个端点。
+
+- 新增独立的当前登录用户信息接口（如 `/auth/me`），登录后可返回当前用户最小必要资料。
+- 接口复用现有 JWT 鉴权链路，不额外实现第二套认证逻辑。
+- 合法 JWT 返回正常用户信息；缺失、无效或过期 JWT 返回一致的鉴权错误。
+- 响应 DTO 与 OpenAPI 对齐，可作为 Sprint 1 联调、演示与验收入口。
+
 ---
 
 ## 6. 验收证据模板（PR 描述建议）
@@ -253,6 +273,7 @@ flowchart LR
 - `T-1.16`：贴出前端 API client 的关键接口函数签名与错误映射逻辑片段（或文档链接），并说明 JWT 注入方式。
 - `T-1.17`：贴出前端页面与 AuthContext/ProtectedRoute 的调用链关键路径，包含成功登录进入受保护页面与错误提示示例。
 - `T-1.18`：贴出 smoke 测试用例清单、执行日志/截图，以及复测入口（本地启动命令、账号/OTP 测试数据获取方式）。
+- `T-1.19`：贴出 `/auth/me`（或等价端点）的接口路径、响应示例，以及至少一组合法 JWT 成功与无效 JWT 失败示例。
 
 ---
 
