@@ -119,6 +119,7 @@ public final class DtoRowMappers {
                 rs.getBigDecimal("amount"),
                 rs.getString("currency"),
                 rs.getString("idempotency_key"),
+                rs.getObject("created_at", OffsetDateTime.class),
                 rs.getObject("updated_at", OffsetDateTime.class),
                 rs.getString("provider_payload")
         );
